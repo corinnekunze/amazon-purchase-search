@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Amazon Purchase Search</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>🧮 Smart Amazon Purchase Search</h1>
+      <p class="subtitle">
+        Upload your Amazon order history and find exact purchase combinations
+      </p>
+
+      <div class="upload-section" id="uploadSection">
+        <h2>📁 Upload Your CSV</h2>
+        <p style="margin: 15px 0; color: #666">
+          Get it from: Amazon → Returns & Orders → Download Order Reports
+        </p>
+        <label for="csvFile" class="file-input-label">Choose CSV File</label>
+        <input type="file" id="csvFile" accept=".csv" />
+        <div id="dataStatus" style="margin-top: 15px; font-weight: 600"></div>
+      </div>
+
+      <div class="search-form" id="searchForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Target Date</label>
+            <input type="date" id="date" required />
+          </div>
+          <div class="form-group">
+            <label>Amount ($)</label>
+            <input
+              type="number"
+              id="amount"
+              step="0.01"
+              placeholder="31.23"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label>Search Range (days)</label>
+            <input type="number" id="days_range" value="7" min="1" max="30" />
+          </div>
+          <div class="form-group">
+            <label>Max Items</label>
+            <input type="number" id="max_combo" value="5" min="2" max="10" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Search Type</label>
+          <div class="radio-group">
+            <label
+              ><input type="radio" name="search_type" value="all" checked />
+              All</label
+            >
+            <label
+              ><input type="radio" name="search_type" value="combination" />
+              Combinations</label
+            >
+            <label
+              ><input type="radio" name="search_type" value="item" />
+              Items</label
+            >
+            <label
+              ><input type="radio" name="search_type" value="order" />
+              Orders</label
+            >
+          </div>
+        </div>
+        <button onclick="searchPurchases()">🔍 Search</button>
+      </div>
+
+      <div id="loading" class="loading">🔍 Searching...</div>
+      <div id="error" class="error"></div>
+      <div id="results" class="results"></div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  </body>
+</html>
