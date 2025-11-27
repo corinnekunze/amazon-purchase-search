@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Amazon Purchase Search - Enhanced</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Oxygen, Ubuntu, Cantarell, sans-serif;
+        background: linear-gradient(135deg, #ff9900 0%, #ff6b00 100%);
+        min-height: 100vh;
+        padding: 20px;
+      }
+
+      .container {
+        max-width: 1400px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        padding: 40px;
+      }
+
+      h1 {
+        color: #232f3e;
+        margin-bottom: 10px;
+        font-size: 32px;
+      }
+
+      h1::before {
+        content: "🧮 ";
+      }
+
+      .subtitle {
+        color: #666;
+        margin-bottom: 30px;
+        font-size: 16px;
+      }
+
+      .info-banner {
+        background: #e8f5e9;
+        border-left: 4px solid #4caf50;
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 4px;
+      }
+
+      .info-banner strong {
+        color: #2e7d32;
+      }
+
+      .search-form {
+        background: #f8f9fa;
+        padding: 25px;
+        border-radius: 8px;
+        margin-bottom: 30px;
+      }
+
+      .form-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-bottom: 20px;
+      }
+
+      .form-group {
+        display: flex;
+        flex-direction: column;
+      }
+
+      label {
+        font-weight: 600;
+        color: #555;
+        margin-bottom: 8px;
+        font-size: 14px;
+      }
+
+      input,
+      select {
+        padding: 12px;
+        border: 2px solid #ddd;
+        border-radius: 6px;
+        font-size: 16px;
+        transition: border-color 0.3s;
+      }
+
+      input:focus,
+      select:focus {
+        outline: none;
+        border-color: #ff9900;
+      }
+
+      .radio-group {
+        display: flex;
+        gap: 15px;
+        padding: 10px 0;
+        flex-wrap: wrap;
+      }
+
+      .radio-group label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 500;
+        cursor: pointer;
+      }
+
+      .radio-group input[type="radio"] {
+        width: auto;
+        cursor: pointer;
+      }
+
+      button {
+        background: linear-gradient(135deg, #ff9900 0%, #ff6b00 100%);
+        color: white;
+        padding: 12px 30px;
+        border: none;
+        border-radius: 6px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+      }
+
+      button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(255, 153, 0, 0.4);
+      }
+
+      button:active {
+        transform: translateY(0);
+      }
+
+      .results {
+        margin-top: 30px;
+      }
+
+      .results-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+
+      .results-count {
+        background: #e3f2fd;
+        color: #1976d2;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 14px;
+      }
+
+      .section-header {
+        background: #232f3e;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        margin: 30px 0 15px 0;
+        font-size: 18px;
+        font-weight: 600;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .probability-badge {
+        background: rgba(255, 255, 255, 0.2);
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 14px;
+      }
+
+      .probability-high {
+        background: #4caf50;
+        color: white;
+        padding: 6px 14px;
+        border-radius: 16px;
+        font-weight: 700;
+      }
+
+      .probability-medium {
+        background: #ff9800;
+        color: white;
+        padding: 6px 14px;
+        border-radius: 16px;
+        font-weight: 700;
+      }
+
+      .probability-low {
+        background: #9e9e9e;
+        color: white;
+        padding: 6px 14px;
+        border-radius: 16px;
+        font-weight: 700;
+      }
+
+      .combo-card {
+        background: white;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+        transition: all 0.3s;
+      }
+
+      .combo-card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        border-color: #ff9900;
+      }
+
+      .combo-card.high-probability {
+        border-color: #4caf50;
+        background: #f1f8f4;
+      }
+
+      .combo-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #eee;
+      }
+
+      .combo-total {
+        font-size: 24px;
+        font-weight: 700;
+        color: #2e7d32;
+      }
+
+      .combo-items {
+        margin-top: 15px;
+      }
+
+      .combo-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px;
+        background: #f9f9f9;
+        border-radius: 4px;
+        margin-bottom: 8px;
+      }
+
+      .combo-item:last-child {
+        margin-bottom: 0;
+      }
+
+      .combo-meta {
+        display: flex;
+        gap: 15px;
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px solid #eee;
+        font-size: 13px;
+        color: #666;
+      }
+
+      .combo-meta-item {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        overflow: hidden;
+        margin-bottom: 30px;
+      }
+
+      thead {
+        background: linear-gradient(135deg, #ff9900 0%, #ff6b00 100%);
+        color: white;
+      }
+
+      th {
+        padding: 16px;
+        text-align: left;
+        font-weight: 600;
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      td {
+        padding: 16px;
+        border-bottom: 1px solid #eee;
+      }
+
+      tbody tr:hover {
+        background: #fff8f0;
+        transition: background 0.2s;
+      }
+
+      tbody tr:last-child td {
+        border-bottom: none;
+      }
+
+      .amount {
+        font-weight: 700;
+        color: #2e7d32;
+        font-size: 16px;
+      }
+
+      .order-id {
+        font-family: monospace;
+        font-size: 12px;
+        color: #666;
+      }
+
+      .days-diff {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 13px;
+      }
+
+      .days-diff.negative {
+        background: #fff3e0;
+        color: #e65100;
+      }
+
+      .days-diff.positive {
+        background: #e8f5e9;
+        color: #2e7d32;
+      }
+
+      .days-diff.zero {
+        background: #e3f2fd;
+        color: #1976d2;
+      }
+
+      .description {
+        max-width: 300px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .view-link {
+        color: #ff9900;
+        text-decoration: none;
+        font-weight: 600;
+      }
+
+      .view-link:hover {
+        text-decoration: underline;
+      }
+
+      .error {
+        background: #ffebee;
+        color: #c62828;
+        padding: 15px;
+        border-radius: 6px;
+        margin-top: 20px;
+        border-left: 4px solid #c62828;
+      }
+
+      .no-results {
+        text-align: center;
+        padding: 40px;
+        color: #999;
+        font-size: 18px;
+      }
+
+      .loading {
+        text-align: center;
+        padding: 40px;
+        color: #ff9900;
+        font-size: 18px;
+      }
+
+      .same-order-badge {
+        background: #2196f3;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 600;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Smart Amazon Purchase Search</h1>
+      <p class="subtitle">
+        Find purchases by item, order, or smart combinations that add up to your
+        amount
+      </p>
+
+      <div class="info-banner">
+        <strong>✨ NEW: Smart Combination Search!</strong><br />
+        Can't find an exact match? The system finds combinations of items that
+        add up to <strong>EXACTLY</strong> your target amount. All totals are
+        exact - Amazon charges precisely what their invoices say!
+      </div>
+
+      <div class="search-form">
+        <form id="searchForm">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="date">Target Date</label>
+              <input type="date" id="date" required />
+            </div>
+
+            <div class="form-group">
+              <label for="amount">Amount ($)</label>
+              <input
+                type="number"
+                id="amount"
+                step="0.01"
+                placeholder="31.23"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="days_range">Search Range (days)</label>
+              <input type="number" id="days_range" value="7" min="1" max="30" />
+            </div>
+
+            <div class="form-group">
+              <label for="max_combo">Max Items in Combo</label>
+              <input type="number" id="max_combo" value="5" min="2" max="10" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Search Type</label>
+            <div class="radio-group">
+              <label>
+                <input type="radio" name="search_type" value="all" checked />
+                All (Recommended)
+              </label>
+              <label>
+                <input type="radio" name="search_type" value="combination" />
+                Smart Combinations
+              </label>
+              <label>
+                <input type="radio" name="search_type" value="item" />
+                Single Items
+              </label>
+              <label>
+                <input type="radio" name="search_type" value="order" />
+                Order Totals
+              </label>
+            </div>
+          </div>
+
+          <button type="submit">🔍 Search Purchases</button>
+        </form>
+      </div>
+
+      <div id="results" class="results" style="display: none">
+        <div class="results-header">
+          <h2>Results</h2>
+          <div class="results-count" id="resultsCount"></div>
+        </div>
+
+        <div id="tableContainer"></div>
+      </div>
+
+      <div id="error" class="error" style="display: none"></div>
+      <div id="loading" class="loading" style="display: none">
+        🔍 Searching and calculating probabilities...
+      </div>
+    </div>
+
+    <script>
+      const BASE_URL = "http://localhost:4333";
+
+      // Set today's date as default
+      document.getElementById("date").valueAsDate = new Date();
+
+      document
+        .getElementById("searchForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          const date = document.getElementById("date").value;
+          const amount = document.getElementById("amount").value;
+          const days_range = document.getElementById("days_range").value;
+          const max_combo = document.getElementById("max_combo").value;
+          const search_type = document.querySelector(
+            'input[name="search_type"]:checked'
+          ).value;
+
+          // Show loading
+          document.getElementById("loading").style.display = "block";
+          document.getElementById("results").style.display = "none";
+          document.getElementById("error").style.display = "none";
+
+          try {
+            const response = await fetch(
+              `${BASE_URL}/api/purchases/search?date=${date}&amount=${amount}&days_range=${days_range}&search_type=${search_type}&max_combo_items=${max_combo}`
+            );
+
+            const data = await response.json();
+
+            document.getElementById("loading").style.display = "none";
+
+            if (!response.ok) {
+              throw new Error(data.error || "Search failed");
+            }
+
+            displayResults(data);
+          } catch (error) {
+            document.getElementById("loading").style.display = "none";
+            document.getElementById(
+              "error"
+            ).textContent = `Error: ${error.message}. Make sure the API is running on port 4333.`;
+            document.getElementById("error").style.display = "block";
+          }
+        });
+
+      function displayResults(data) {
+        const resultsDiv = document.getElementById("results");
+        const tableContainer = document.getElementById("tableContainer");
+        const resultsCount = document.getElementById("resultsCount");
+
+        const totalMatches = data.total_matches;
+        resultsCount.textContent = `${totalMatches} match${
+          totalMatches !== 1 ? "es" : ""
+        } found`;
+
+        let html = "";
+
+        // Display combination matches (most important!)
+        if (data.combination_matches && data.combination_matches.length > 0) {
+          html +=
+            '<div class="section-header">🧮 Smart Combinations (Items that add up to your amount)</div>';
+          html += generateCombinationCards(
+            data.combination_matches,
+            data.query.target_amount
+          );
+        }
+
+        // Display exact order matches
+        if (data.order_matches && data.order_matches.length > 0) {
+          html +=
+            '<div class="section-header">📦 Exact Order Total Matches</div>';
+          html += generateOrderTable(data.order_matches);
+        }
+
+        // Display exact item matches
+        if (data.item_matches && data.item_matches.length > 0) {
+          html +=
+            '<div class="section-header">🛍️ Exact Item Price Matches</div>';
+          html += generateItemTable(data.item_matches);
+        }
+
+        if (totalMatches === 0) {
+          html =
+            '<div class="no-results">No matching purchases found. Try increasing the date range or adjusting the amount.</div>';
+        }
+
+        tableContainer.innerHTML = html;
+        resultsDiv.style.display = "block";
+      }
+
+      function generateCombinationCards(combinations, targetAmount) {
+        let html = "";
+
+        combinations.forEach((combo, index) => {
+          const probabilityClass =
+            combo.probability_score >= 70 ? "high-probability" : "";
+          const probabilityBadgeClass =
+            combo.probability_score >= 70
+              ? "probability-high"
+              : combo.probability_score >= 50
+              ? "probability-medium"
+              : "probability-low";
+
+          html += `
+                    <div class="combo-card ${probabilityClass}">
+                        <div class="combo-header">
+                            <div>
+                                <div style="color: #666; font-size: 12px; margin-bottom: 5px;">Match #${
+                                  index + 1
+                                }</div>
+                                <div class="combo-total">$${combo.total_amount.toFixed(
+                                  2
+                                )}</div>
+                                <div style="color: #4CAF50; font-size: 14px; margin-top: 5px; font-weight: 600;">
+                                    ✓ EXACT MATCH (Target: $${targetAmount.toFixed(
+                                      2
+                                    )})
+                                </div>
+                            </div>
+                            <div>
+                                <div class="${probabilityBadgeClass}">
+                                    ${combo.probability_score}% Confidence
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="combo-items">
+                            <strong>${combo.item_count} Item${
+            combo.item_count !== 1 ? "s" : ""
+          }:</strong>
+                            ${combo.items
+                              .map((item) => {
+                                const daysDiff = item.days_from_target;
+                                const diffClass =
+                                  daysDiff < 0
+                                    ? "negative"
+                                    : daysDiff > 0
+                                    ? "positive"
+                                    : "zero";
+                                const diffText =
+                                  daysDiff === 0
+                                    ? "Same day"
+                                    : daysDiff < 0
+                                    ? `${Math.abs(daysDiff)}d before`
+                                    : `${daysDiff}d after`;
+
+                                return `
+                                    <div class="combo-item">
+                                        <div style="flex: 1;">
+                                            <div style="font-weight: 600;">$${item.amount.toFixed(
+                                              2
+                                            )}</div>
+                                            <div style="font-size: 13px; color: #666; margin-top: 4px;">${
+                                              item.description
+                                            }</div>
+                                            <div style="font-size: 11px; color: #999; margin-top: 4px;">Order: ${
+                                              item.order_id
+                                            }</div>
+                                        </div>
+                                        <div style="text-align: right;">
+                                            <div style="font-size: 13px; color: #666;">${
+                                              item.date
+                                            }</div>
+                                            <span class="days-diff ${diffClass}" style="margin-top: 5px; display: inline-block;">${diffText}</span>
+                                        </div>
+                                    </div>
+                                `;
+                              })
+                              .join("")}
+                        </div>
+                        
+                        <div class="combo-meta">
+                            <div class="combo-meta-item">
+                                📅 Avg ${Math.abs(
+                                  combo.avg_days_from_target
+                                ).toFixed(1)} days from target
+                            </div>
+                            ${
+                              combo.same_order
+                                ? '<div class="combo-meta-item"><span class="same-order-badge">SAME ORDER</span></div>'
+                                : ""
+                            }
+                            <div class="combo-meta-item">
+                                📦 ${combo.order_ids.length} order${
+            combo.order_ids.length !== 1 ? "s" : ""
+          }
+                            </div>
+                        </div>
+                    </div>
+                `;
+        });
+
+        return html;
+      }
+
+      function generateOrderTable(orders) {
+        let tableHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Date</th>
+                            <th>Total</th>
+                            <th>Days Diff</th>
+                            <th>Items</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+        orders.forEach((order) => {
+          const daysDiff = order.days_from_target;
+          const diffClass =
+            daysDiff < 0 ? "negative" : daysDiff > 0 ? "positive" : "zero";
+          const diffText =
+            daysDiff === 0
+              ? "Same day"
+              : daysDiff < 0
+              ? `${Math.abs(daysDiff)} days before`
+              : `${daysDiff} days after`;
+
+          tableHTML += `
+                    <tr>
+                        <td class="order-id">${order.order_id}</td>
+                        <td>${order.date}</td>
+                        <td class="amount">$${order.total.toFixed(2)}</td>
+                        <td><span class="days-diff ${diffClass}">${diffText}</span></td>
+                        <td>${order.item_count} item${
+            order.item_count !== 1 ? "s" : ""
+          }</td>
+                    </tr>
+                `;
+        });
+
+        tableHTML += `
+                    </tbody>
+                </table>
+            `;
+
+        return tableHTML;
+      }
+
+      function generateItemTable(items) {
+        let tableHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Amount</th>
+                            <th>Days Diff</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+        items.forEach((item) => {
+          const daysDiff = item.days_from_target;
+          const diffClass =
+            daysDiff < 0 ? "negative" : daysDiff > 0 ? "positive" : "zero";
+          const diffText =
+            daysDiff === 0
+              ? "Same day"
+              : daysDiff < 0
+              ? `${Math.abs(daysDiff)} days before`
+              : `${daysDiff} days after`;
+
+          tableHTML += `
+                    <tr>
+                        <td>${item.date}</td>
+                        <td class="amount">$${item.amount.toFixed(2)}</td>
+                        <td><span class="days-diff ${diffClass}">${diffText}</span></td>
+                        <td class="description" title="${item.description}">${
+            item.description
+          }</td>
+                    </tr>
+                `;
+        });
+
+        tableHTML += `
+                    </tbody>
+                </table>
+            `;
+
+        return tableHTML;
+      }
+    </script>
+  </body>
+</html>
