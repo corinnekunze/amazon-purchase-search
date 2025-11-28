@@ -1,3 +1,13 @@
+import nunjucks from "https://esm.sh/nunjucks@3.2.4";
+
+// Configure nunjucks to load templates from /static/templates/
+const env = nunjucks.configure("/static/templates", {
+  autoescape: true,
+  web: {
+    async: false,
+  },
+});
+
 let dataLoaded = false;
 
 document
@@ -9,7 +19,7 @@ document
     const formData = new FormData();
     formData.append("file", file);
 
-    document.getElementById("dataStatus").innerHTML = "⏳ Processing...";
+    document.getElementById("dataStatus").textContent = "⏳ Processing...";
 
     try {
       const response = await fetch("/api/upload", {
@@ -22,18 +32,15 @@ document
       if (response.ok) {
         dataLoaded = true;
         document.getElementById("uploadSection").classList.add("loaded");
-        document.getElementById(
-          "dataStatus"
-        ).innerHTML = `✅ Loaded ${data.total_items} items from ${data.total_orders} orders`;
+        document.getElementById("dataStatus").textContent =
+          `✅ Loaded ${data.total_items} items from ${data.total_orders} orders`;
         document.getElementById("searchForm").classList.add("active");
         document.getElementById("date").valueAsDate = new Date();
       } else {
         throw new Error(data.error || "Upload failed");
       }
     } catch (error) {
-      document.getElementById(
-        "dataStatus"
-      ).innerHTML = `❌ ${error.message}`;
+      document.getElementById("dataStatus").textContent = `❌ ${error.message}`;
     }
   });
 
@@ -74,79 +81,35 @@ async function searchPurchases() {
   }
 }
 
+// Make searchPurchases available globally for the onclick handler
+window.searchPurchases = searchPurchases;
+
 function displayResults(data) {
   const resultsDiv = document.getElementById("results");
-  let html = "<h2>Results</h2>";
 
-  if (data.combination_matches && data.combination_matches.length > 0) {
-    html +=
-      '<h3 style="margin: 20px 0;">🧮 Combinations (Exact Matches)</h3>';
-    data.combination_matches.forEach((combo, i) => {
-      const probClass =
-        combo.probability_score >= 70 ? "high-probability" : "";
-      const probBadge =
-        combo.probability_score >= 70
-          ? "probability-high"
-          : "probability-medium";
+  // Prepare data for template
+  const templateData = {
+    hasCombinations: data.combination_matches && data.combination_matches.length > 0,
+    noMatches: data.total_matches === 0,
+    combination_matches: data.combination_matches?.map((combo, index) => ({
+      ...combo,
+      index: index + 1,
+      total_amount: combo.total_amount.toFixed(2),
+      probClass: combo.probability_score >= 70 ? "high-probability" : "",
+      probBadge: combo.probability_score >= 70 ? "probability-high" : "probability-medium",
+      items: combo.items.map(item => ({
+        ...item,
+        amount: item.amount.toFixed(2),
+        daysText: item.days_from_target === 0
+          ? "Same day"
+          : item.days_from_target < 0
+          ? `${Math.abs(item.days_from_target)}d before`
+          : `${item.days_from_target}d after`
+      }))
+    }))
+  };
 
-      html += `
-                <div class="combo-card ${probClass}">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
-                        <div>
-                            <div style="color: #666; font-size: 12px;">Match #${
-                              i + 1
-                            }</div>
-                            <div class="combo-total">$${combo.total_amount.toFixed(
-                              2
-                            )}</div>
-                            <div style="color: #4CAF50; margin-top: 5px; font-weight: 600;">✓ EXACT MATCH</div>
-                        </div>
-                        <div class="${probBadge}">${
-        combo.probability_score
-      }%</div>
-                    </div>
-                    <strong>${combo.item_count} Items:</strong>
-                    ${combo.items
-                      .map(
-                        (item) => `
-                        <div class="combo-item">
-                            <div>
-                                <div style="font-weight: 600;">$${item.amount.toFixed(
-                                  2
-                                )}</div>
-                                <div style="font-size: 13px; color: #666;">${
-                                  item.description
-                                }</div>
-                            </div>
-                            <div style="text-align: right; font-size: 13px; color: #666;">
-                                ${item.date}<br>
-                                ${
-                                  item.days_from_target === 0
-                                    ? "Same day"
-                                    : item.days_from_target < 0
-                                    ? `${Math.abs(
-                                        item.days_from_target
-                                      )}d before`
-                                    : `${item.days_from_target}d after`
-                                }
-                            </div>
-                        </div>
-                    `
-                      )
-                      .join("")}
-                    <div style="margin-top: 10px; font-size: 13px; color: #666;">
-                        ${combo.same_order ? "✅ SAME ORDER" : ""}
-                    </div>
-                </div>
-            `;
-    });
-  }
-
-  if (data.total_matches === 0) {
-    html +=
-      '<div style="text-align: center; padding: 40px; color: #999;">No exact matches found. Try increasing the date range.</div>';
-  }
-
-  resultsDiv.innerHTML = html;
+  // Render template
+  resultsDiv.innerHTML = nunjucks.render("results.html", templateData);
   resultsDiv.classList.add("active");
 }
