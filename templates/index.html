@@ -4,7 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Amazon Purchase Search</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
   </head>
   <body>
     <div class="container">
@@ -13,12 +16,47 @@
         Upload your Amazon order history and find exact purchase combinations
       </p>
 
+      <div
+        style="
+          margin: 15px 0;
+          padding: 12px;
+          background: #e8f4f8;
+          border-left: 4px solid #2196f3;
+          border-radius: 4px;
+        "
+      >
+        <p style="margin: 0 0 8px 0; color: #333; font-weight: 600">
+          Quick Start:
+        </p>
+        <p style="margin: 0; color: #555; font-size: 14px">
+          1. Install the
+          <a
+            href="https://chromewebstore.google.com/detail/amazon-order-history-repo/mgkilgclilajckgnedgjgnfdokkgnibi"
+            target="_blank"
+            rel="noopener noreferrer"
+            style="color: #2196f3; text-decoration: underline"
+            >Amazon Order History Reporter</a
+          >
+          extension<br />
+          2. Go to your
+          <a
+            href="https://www.amazon.com/gp/your-account/order-history"
+            target="_blank"
+            rel="noopener noreferrer"
+            style="color: #2196f3; text-decoration: underline"
+            >Amazon Order History</a
+          >
+          page<br />
+          3. Click the extension and download the past 3 months as CSV<br />
+          4. Upload it here (instant, no waiting for Amazon reports!)
+        </p>
+      </div>
+
       <div class="upload-section" id="uploadSection">
         <h2>📁 Upload Your CSV</h2>
-        <p style="margin: 15px 0; color: #666">
-          Get it from: Amazon → Returns & Orders → Download Order Reports
-        </p>
-        <label for="csvFile" class="file-input-label">Choose CSV File</label>
+        <label for="csvFile" class="file-input-label" style="margin-top: 15px"
+          >Choose CSV File</label
+        >
         <input type="file" id="csvFile" accept=".csv" />
         <div id="dataStatus" style="margin-top: 15px; font-weight: 600"></div>
       </div>
@@ -77,6 +115,9 @@
       <div id="results" class="results"></div>
     </div>
 
-    <script type="module" src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script
+      type="module"
+      src="{{ url_for('static', filename='js/main.js') }}"
+    ></script>
   </body>
 </html>
