@@ -84,29 +84,73 @@ async function searchPurchases() {
 // Make searchPurchases available globally for the onclick handler
 window.searchPurchases = searchPurchases;
 
+// Helper functions for data transformation
+function formatAmount(amount) {
+  return typeof amount === 'number' ? amount.toFixed(2) : amount;
+}
+
+function formatDaysText(days_from_target) {
+  if (days_from_target === 0) return "Same day";
+  if (days_from_target < 0) return `${Math.abs(days_from_target)}d before`;
+  return `${days_from_target}d after`;
+}
+
+function addProbabilityClass(probability_score) {
+  return probability_score >= 70 ? "high-probability" : "";
+}
+
+function addProbabilityBadge(probability_score) {
+  return probability_score >= 70 ? "probability-high" : "probability-medium";
+}
+
+function enrichItem(item) {
+  return {
+    ...item,
+    amount: formatAmount(item.amount),
+    daysText: item.days_from_target !== undefined ? formatDaysText(item.days_from_target) : null
+  };
+}
+
+function enrichMatch(match, index) {
+  const enriched = {
+    ...match,
+    index: index + 1
+  };
+
+  // Add display amount (handles both 'amount' and 'total' fields)
+  enriched.displayAmount = formatAmount(match.total || match.total_amount || match.amount);
+
+  // Add days text if available
+  if (match.days_from_target !== undefined) {
+    enriched.daysText = formatDaysText(match.days_from_target);
+  }
+
+  // Add probability classes for combinations
+  if (match.probability_score !== undefined) {
+    enriched.probClass = addProbabilityClass(match.probability_score);
+    enriched.probBadge = addProbabilityBadge(match.probability_score);
+  }
+
+  // Enrich nested items if present
+  if (match.items) {
+    enriched.items = match.items.map(enrichItem);
+  }
+
+  return enriched;
+}
+
 function displayResults(data) {
   const resultsDiv = document.getElementById("results");
 
-  // Prepare data for template
+  // Prepare data for template using DRY helper functions
   const templateData = {
-    hasCombinations: data.combination_matches && data.combination_matches.length > 0,
+    hasItemMatches: data.item_matches?.length > 0,
+    hasOrderMatches: data.order_matches?.length > 0,
+    hasCombinations: data.combination_matches?.length > 0,
     noMatches: data.total_matches === 0,
-    combination_matches: data.combination_matches?.map((combo, index) => ({
-      ...combo,
-      index: index + 1,
-      total_amount: combo.total_amount.toFixed(2),
-      probClass: combo.probability_score >= 70 ? "high-probability" : "",
-      probBadge: combo.probability_score >= 70 ? "probability-high" : "probability-medium",
-      items: combo.items.map(item => ({
-        ...item,
-        amount: item.amount.toFixed(2),
-        daysText: item.days_from_target === 0
-          ? "Same day"
-          : item.days_from_target < 0
-          ? `${Math.abs(item.days_from_target)}d before`
-          : `${item.days_from_target}d after`
-      }))
-    }))
+    item_matches: data.item_matches?.map(enrichMatch),
+    order_matches: data.order_matches?.map(enrichMatch),
+    combination_matches: data.combination_matches?.map(enrichMatch)
   };
 
   // Render template

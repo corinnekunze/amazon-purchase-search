@@ -1,0 +1,66 @@
+{% macro renderMatchCard(match, matchType) %}
+<div class="combo-card {{ match.probClass if match.probClass else '' }}">
+  <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+    <div>
+      <div style="color: #666; font-size: 12px;">
+        {{ matchType }} #{{ match.index }}
+      </div>
+      <div class="combo-total">
+        ${{ match.displayAmount }}
+      </div>
+      <div style="color: #4CAF50; margin-top: 5px; font-weight: 600;">
+        ✓ EXACT MATCH
+      </div>
+    </div>
+    {% if match.probBadge %}
+    <div class="{{ match.probBadge }}">{{ match.probability_score }}%</div>
+    {% endif %}
+  </div>
+
+  {% if match.item_count %}
+  <strong>{{ match.item_count }} Item{{ 's' if match.item_count > 1 else '' }}{{ ':' if match.item_count > 1 else '' }}</strong>
+  {% endif %}
+
+  {% if match.items %}
+  {% for item in match.items %}
+  <div class="combo-item">
+    <div>
+      <div style="font-weight: 600;">${{ item.amount }}</div>
+      <div style="font-size: 13px; color: #666;">{{ item.description }}</div>
+    </div>
+    <div style="text-align: right; font-size: 13px; color: #666;">
+      {{ item.date }}
+      {% if item.daysText %}
+      <br>{{ item.daysText }}
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+  {% else %}
+  <div class="combo-item">
+    <div>
+      <div style="font-weight: 600;">${{ match.amount }}</div>
+      <div style="font-size: 13px; color: #666;">{{ match.description }}</div>
+    </div>
+    <div style="text-align: right; font-size: 13px; color: #666;">
+      {{ match.date }}
+      {% if match.daysText %}
+      <br>{{ match.daysText }}
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+
+  <div style="margin-top: 10px; font-size: 13px; color: #666;">
+    {% if match.same_order %}
+    ✅ SAME ORDER<br>
+    {% endif %}
+    {% if match.order_id %}
+    Order ID: {{ match.order_id }}
+    {% endif %}
+    {% if match.order_ids %}
+    Order IDs: {{ match.order_ids | join(', ') }}
+    {% endif %}
+  </div>
+</div>
+{% endmacro %}

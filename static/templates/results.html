@@ -1,33 +1,25 @@
+{% import "match-card.html" as cards %}
+
 <h2>Results</h2>
 
+{% if hasItemMatches %}
+<h3 style="margin: 20px 0;">📦 Individual Items</h3>
+{% for item in item_matches %}
+  {{ cards.renderMatchCard(item, "Item Match") }}
+{% endfor %}
+{% endif %}
+
+{% if hasOrderMatches %}
+<h3 style="margin: 20px 0;">📋 Full Orders</h3>
+{% for order in order_matches %}
+  {{ cards.renderMatchCard(order, "Order Match") }}
+{% endfor %}
+{% endif %}
+
 {% if hasCombinations %}
-<h3 style="margin: 20px 0;">🧮 Combinations (Exact Matches)</h3>
+<h3 style="margin: 20px 0;">🧮 Combinations</h3>
 {% for combo in combination_matches %}
-<div class="combo-card {{ combo.probClass }}">
-  <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
-    <div>
-      <div style="color: #666; font-size: 12px;">Match #{{ combo.index }}</div>
-      <div class="combo-total">${{ combo.total_amount }}</div>
-      <div style="color: #4CAF50; margin-top: 5px; font-weight: 600;">✓ EXACT MATCH</div>
-    </div>
-    <div class="{{ combo.probBadge }}">{{ combo.probability_score }}%</div>
-  </div>
-  <strong>{{ combo.item_count }} Items:</strong>
-  {% for item in combo.items %}
-  <div class="combo-item">
-    <div>
-      <div style="font-weight: 600;">${{ item.amount }}</div>
-      <div style="font-size: 13px; color: #666;">{{ item.description }}</div>
-    </div>
-    <div style="text-align: right; font-size: 13px; color: #666;">
-      {{ item.date }}<br>{{ item.daysText }}
-    </div>
-  </div>
-  {% endfor %}
-  <div style="margin-top: 10px; font-size: 13px; color: #666;">
-    {% if combo.same_order %}✅ SAME ORDER{% endif %}
-  </div>
-</div>
+  {{ cards.renderMatchCard(combo, "Combination") }}
 {% endfor %}
 {% endif %}
 
