@@ -18,6 +18,33 @@ ORDERS = {}
 def parse_date(date_string: str) -> datetime:
     return datetime.strptime(date_string, "%Y-%m-%d")
 
+def get_date_range(target_date: str, days_range: int):
+    """Calculate start and end dates for a given target date and range."""
+    target_dt = parse_date(target_date)
+    start_date = target_dt - timedelta(days=days_range)
+    end_date = target_dt + timedelta(days=days_range)
+    return target_dt, start_date, end_date
+
+def round_amount(amount: float) -> float:
+    """Round amount to 2 decimal places for consistent comparison."""
+    return round(amount, 2)
+
+def calculate_days_diff(item_date: str, target_dt: datetime) -> int:
+    """Calculate days difference between item date and target date."""
+    return (parse_date(item_date) - target_dt).days
+
+def filter_candidates_by_date_range(items, target_date: str, days_range: int, min_amount: float = 0):
+    """Filter items by date range and optionally by minimum amount."""
+    target_dt, start_date, end_date = get_date_range(target_date, days_range)
+
+    candidates = []
+    for item in items:
+        item_date = parse_date(item["date"])
+        if start_date <= item_date <= end_date and item["amount"] > min_amount:
+            candidates.append(item)
+
+    return candidates, target_dt
+
 def load_amazon_csv_from_string(csv_content: str):
     global PURCHASES, ORDERS
     
@@ -119,34 +146,26 @@ def calculate_probability_score(items: List[Dict], target_date: str, target_amou
     return round(date_score + same_order_score, 2)
 
 def find_item_combinations(target_date: str, target_amount: float, days_range: int = 7, max_items: int = 5) -> List[Dict]:
-    target_dt = parse_date(target_date)
-    start_date = target_dt - timedelta(days=days_range)
-    end_date = target_dt + timedelta(days=days_range)
-    
-    candidates = []
-    for purchase in PURCHASES:
-        purchase_date = parse_date(purchase["date"])
-        if start_date <= purchase_date <= end_date and purchase["amount"] > 0:
-            candidates.append(purchase)
-    
+    candidates, target_dt = filter_candidates_by_date_range(PURCHASES, target_date, days_range, min_amount=0)
+
     if not candidates:
         return []
-    
-    candidates.sort(key=lambda p: abs((parse_date(p['date']) - target_dt).days))
+
+    candidates.sort(key=lambda p: abs(calculate_days_diff(p['date'], target_dt)))
     candidates = candidates[:50]
-    
+
     matches = []
-    
+
     for combo_size in range(1, min(max_items + 1, len(candidates) + 1)):
         for combo in combinations(candidates, combo_size):
             total = sum(item['amount'] for item in combo)
-            
+
             if abs(total - target_amount) == 0:
-                days_diffs = [(parse_date(item['date']) - target_dt).days for item in combo]
+                days_diffs = [calculate_days_diff(item['date'], target_dt) for item in combo]
                 avg_days_diff = sum(abs(d) for d in days_diffs) / len(days_diffs)
-                
+
                 probability = calculate_probability_score(list(combo), target_date, target_amount)
-                
+
                 matches.append({
                     'items': [
                         {
@@ -155,11 +174,11 @@ def find_item_combinations(target_date: str, target_amount: float, days_range: i
                             'date': item['date'],
                             'amount': item['amount'],
                             'description': item['description'],
-                            'days_from_target': (parse_date(item['date']) - target_dt).days
+                            'days_from_target': calculate_days_diff(item['date'], target_dt)
                         }
                         for item in combo
                     ],
-                    'total_amount': round(total, 2),
+                    'total_amount': round_amount(total),
                     'item_count': len(combo),
                     'avg_days_from_target': round(avg_days_diff, 1),
                     'probability_score': probability,
@@ -167,35 +186,27 @@ def find_item_combinations(target_date: str, target_amount: float, days_range: i
                     'order_ids': list(set(item['order_id'] for item in combo)),
                     'search_type': 'combination'
                 })
-        
+
         if matches and max(m['probability_score'] for m in matches) > 70:
             break
-    
+
     matches.sort(key=lambda x: x['probability_score'], reverse=True)
     return matches[:10]
 
 def find_matching_items(target_date: str, target_amount: float, days_range: int = 7) -> List[Dict]:
-    target_dt = parse_date(target_date)
-    start_date = target_dt - timedelta(days=days_range)
-    end_date = target_dt + timedelta(days=days_range)
-
-    # Round target amount to 2 decimal places for consistent comparison
-    target_amount = round(target_amount, 2)
+    target_dt, start_date, end_date = get_date_range(target_date, days_range)
+    target_amount = round_amount(target_amount)
 
     matching_items = []
 
     for purchase in PURCHASES:
         purchase_date = parse_date(purchase["date"])
-
-        # Round purchase amount to 2 decimal places for consistent comparison
-        purchase_amount = round(purchase["amount"], 2)
+        purchase_amount = round_amount(purchase["amount"])
 
         if start_date <= purchase_date <= end_date and purchase_amount == target_amount:
-            days_diff = (purchase_date - target_dt).days
-
             matching_items.append({
                 **purchase,
-                "days_from_target": days_diff,
+                "days_from_target": calculate_days_diff(purchase["date"], target_dt),
                 "target_date": target_date,
                 "search_type": "item"
             })
@@ -203,27 +214,19 @@ def find_matching_items(target_date: str, target_amount: float, days_range: int 
     return matching_items
 
 def find_matching_orders(target_date: str, target_amount: float, days_range: int = 7) -> List[Dict]:
-    target_dt = parse_date(target_date)
-    start_date = target_dt - timedelta(days=days_range)
-    end_date = target_dt + timedelta(days=days_range)
-
-    # Round target amount to 2 decimal places for consistent comparison
-    target_amount = round(target_amount, 2)
+    target_dt, start_date, end_date = get_date_range(target_date, days_range)
+    target_amount = round_amount(target_amount)
 
     matching_orders = []
 
     for order_id, order in ORDERS.items():
         order_date = parse_date(order["date"])
-
-        # Round order total to 2 decimal places for consistent comparison
-        order_total = round(order["total"], 2)
+        order_total = round_amount(order["total"])
 
         if start_date <= order_date <= end_date and order_total == target_amount:
-            days_diff = (order_date - target_dt).days
-
             matching_orders.append({
                 **order,
-                "days_from_target": days_diff,
+                "days_from_target": calculate_days_diff(order["date"], target_dt),
                 "target_date": target_date,
                 "search_type": "order"
             })

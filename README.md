@@ -20,6 +20,7 @@ This tool was generated using [Claude Code](https://claude.com/claude-code) to s
 ## Use Case
 
 Perfect for users of budgeting software like YNAB who want to:
+
 - Categorize Amazon purchases accurately
 - Split Amazon orders into proper budget categories
 - Track what specific items were purchased in a given transaction
@@ -35,12 +36,14 @@ Perfect for users of budgeting software like YNAB who want to:
 ### Installation
 
 1. Clone the repository:
+
 ```bash
 git clone <your-repo-url>
 cd amazon-purchases
 ```
 
 2. Create a virtual environment and install dependencies:
+
 ```bash
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
@@ -48,6 +51,7 @@ pip install -r requirements_deploy.txt
 ```
 
 3. Run the application:
+
 ```bash
 python app.py
 ```
@@ -83,6 +87,7 @@ This method is instant, unlike Amazon's official order reports which can take ho
 4. **Identify** which specific items or orders correspond to your bank charge
 
 The app provides three types of matches:
+
 - Single items that match the amount
 - Complete orders that match the total
 - Combinations of items purchased around the same time that add up to the amount
@@ -102,15 +107,7 @@ This app is configured for deployment on [Render](https://render.com). Simply co
 
 ## Development
 
-Run tests:
-```bash
-pytest
-```
-
-Run with debug mode:
-```bash
-python app.py
-```
+Run tests - SEE [README](/tests/README.md)
 
 ## Privacy
 
