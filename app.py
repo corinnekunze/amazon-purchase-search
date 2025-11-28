@@ -141,7 +141,7 @@ def find_item_combinations(target_date: str, target_amount: float, days_range: i
         for combo in combinations(candidates, combo_size):
             total = sum(item['amount'] for item in combo)
             
-            if abs(total - target_amount) < 0.01:
+            if abs(total - target_amount) == 0:
                 days_diffs = [(parse_date(item['date']) - target_dt).days for item in combo]
                 avg_days_diff = sum(abs(d) for d in days_diffs) / len(days_diffs)
                 
@@ -190,7 +190,7 @@ def find_matching_items(target_date: str, target_amount: float, days_range: int 
         # Round purchase amount to 2 decimal places for consistent comparison
         purchase_amount = round(purchase["amount"], 2)
 
-        if start_date <= purchase_date <= end_date and abs(purchase_amount - target_amount) < 0.01:
+        if start_date <= purchase_date <= end_date and purchase_amount == target_amount:
             days_diff = (purchase_date - target_dt).days
 
             matching_items.append({
@@ -218,7 +218,7 @@ def find_matching_orders(target_date: str, target_amount: float, days_range: int
         # Round order total to 2 decimal places for consistent comparison
         order_total = round(order["total"], 2)
 
-        if start_date <= order_date <= end_date and abs(order_total - target_amount) < 0.01:
+        if start_date <= order_date <= end_date and order_total == target_amount:
             days_diff = (order_date - target_dt).days
 
             matching_orders.append({
